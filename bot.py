@@ -23,25 +23,28 @@ class Bot:
 
         self.memory: dict = {}  # last title that user found, stored in memory
 
-    def start(self, update, context):
+    @staticmethod
+    def start(update: Update, context: CallbackContext):
         """Message that prints for new users"""
-        update.message.reply_text("Hello :) -> /help")  # TODO
+        update.message.reply_text("Hello, I'm MovieBot :) -> /help")
 
-    def help_text(self, update, context):
+    @staticmethod
+    def help_text(update: Update, context: CallbackContext):
         """/help message"""
         update.message.reply_text("Help will be there")  # TODO
 
-    def any_text(self, update, context):
+    @staticmethod
+    def any_text(update: Update, context: CallbackContext):
         """Bot response on not coded text"""
-        update.message.reply_text(f"You said {update.message.text}")
+        update.message.reply_text(f"Unknown command: {update.message.text}")
 
-    def error(self, update, context):
+    def error(self, update: Update, context: CallbackContext):
         """Logs errors"""
         update.message.reply_text("Sorry, this movie/show is unknown to me")
         self.logger.exception(f"error: {context.error} - "
                               f"['{update['message']['chat']['first_name']}': '{update['message']['text']}']")
 
-    def find_title(self, update, context):
+    def find_title(self, update: Update, context: CallbackContext):
         """/find command, finds movie by specifications"""
         if "y=" in context.args[-1]:                    # check arguments for year specification
             movie_name = " ".join(context.args[:-1])
@@ -56,7 +59,6 @@ class Bot:
                 "apikey": OMDB_API,
                 "t": movie_name,
             }
-
         response = requests.get("http://www.omdbapi.com", params=params)
         response.raise_for_status()
         movie_data = self.memory = response.json()                                  # Save found title in memory
@@ -68,26 +70,36 @@ class Bot:
                    f"Director:    {movie_data['Director']}\n"
 
         poster = requests.get(movie_data["Poster"]).content
-        context.bot.sendMediaGroup(chat_id=update.effective_chat.id, media=[InputMediaPhoto(poster)])
-        update.message.reply_text(data_str)
+        context.bot.sendMediaGroup(chat_id=update.effective_chat.id, media=[InputMediaPhoto(poster)])  # Show poster
+        buttons = [[InlineKeyboardButton("awards", callback_data=f"{self.memory['Title']} awards")],
+                   [InlineKeyboardButton("trailer", callback_data=f"{self.memory['Title']} trailer")]]
+        update.message.reply_text(data_str, reply_markup=InlineKeyboardMarkup(buttons))
 
-    def rated(self, update, context):
+    def rated(self, update: Update, context: CallbackContext):
         """Print out rating of the movie in memory"""
         if self.memory:
-            update.message.reply_text(f"{self.memory['Title']} rated: {self.memory['Rated']}")
+            update.message.reply_text(f"{self.memory['Title']} rated:\n{self.memory['Rated']}")
         else:
-            update.message.reply_text("My memory is empty😕")
+            update.message.reply_text("My memory is empty😕.\nLook something up! -> /find")
 
-    def language(self, update, context):
+    def language(self, update: Update, context: CallbackContext):
         """Print out rating of the movie in memory"""
         if self.memory:
-            update.message.reply_text(f"{self.memory['Title']} languages: {self.memory['Language']}")
+            update.message.reply_text(f"{self.memory['Title']} languages:\n{self.memory['Language']}")
         else:
-            update.message.reply_text("My memory is empty😕")
+            update.message.reply_text("My memory is empty😕.\nLook something up! -> /find")
 
-    def awards(self, update, context):
+    def awards(self, update: Update, context: CallbackContext):
         """Print out rating of the movie in memory"""
         if self.memory:
-            update.message.reply_text(f"{self.memory['Title']} awards: {self.memory['Awards']}")
+            update.message.reply_text(f"{self.memory['Title']} awards:\n{self.memory['Awards']}")
         else:
-            update.message.reply_text("My memory is empty😕")
+            update.message.reply_text("My memory is empty😕.\nLook something up! -> /find")
+
+    def query_handler(self, update: Update, context: CallbackContext):
+        query = update.callback_query.data
+        update.callback_query.answer()
+        self.logger.info(query)
+        if f"{self.memory['Title']} awards" in query:
+            update.callback_query.message.reply_text(f"{self.memory['Title']} awards:\n{self.memory['Awards']}")
+

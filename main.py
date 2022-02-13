@@ -3,10 +3,10 @@
 # Aleksandr Verevkin
 # Telegram movie/show information bot
 # By using omdb & imdb APIs
-from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackQueryHandler, filters
 from bot import Bot
 # TODO separate print method
-# TODO separate logging file?
+# TODO buttons memory
 
 if __name__ == "__main__":
     bot = Bot()                              # Bot initialization
@@ -21,6 +21,8 @@ if __name__ == "__main__":
     bot.dp.add_handler(CommandHandler("awards", bot.awards))
 
     bot.dp.add_handler(MessageHandler(Filters.text, bot.any_text))  # Any other message
+
+    bot.dp.add_handler(CallbackQueryHandler(bot.query_handler))
 
     bot.dp.add_error_handler(bot.error)  # Error
 
