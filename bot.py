@@ -3,19 +3,19 @@ import os
 from telegram.ext import *
 from telegram import *
 import logging
+import logging.config
 BOT_API = os.getenv("BOT_API", None)
 API_KEY = os.getenv("API_KEY", None)
-memory: dict = {}
-# TODO separate print method
-# TODO separate logging file?
+memory: dict = {}  # last title that user found, stored in memory
 
 
 class Bot:
     def __init__(self):
-        logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
-        logging.info("Starting Bot...")
+        """Initialize bot and his logger"""
+        logging.config.fileConfig("logging.conf")  # Use logger config
+        self.logger = logging.getLogger(__name__)  # Create logger
 
-        self.updater = Updater(BOT_API, use_context=True)
+        self.updater = Updater(BOT_API, use_context=True)  # Set up bot updater and dispatcher
         self.dp = self.updater.dispatcher
 
     def start(self, update, context):
@@ -33,12 +33,12 @@ class Bot:
     def error(self, update, context):
         """Logs errors"""
         update.message.reply_text("Sorry, this movie/show is unknown to me")
-        logging.error(f"Update: error: {context.error}, caused by: {update}")
+        self.logger.exception(f"error: {context.error} - "
+                              f"['{update['message']['chat']['first_name']}': '{update['message']['text']}']")
 
     def find_title(self, update, context):
         """/find command, finds movie by specifications"""
-        # check arguments for year specification
-        if "y=" in context.args[-1]:
+        if "y=" in context.args[-1]:                    # check arguments for year specification
             movie_name = " ".join(context.args[:-1])
             params = {
                 "apikey": API_KEY,
