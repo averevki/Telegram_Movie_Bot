@@ -11,7 +11,6 @@ from bot import Bot
 if __name__ == "__main__":
     bot = Bot()                              # Bot initialization
     bot.logger.info("Bot is initialized")
-    bot.logger.error("Error lol")
 
     bot.dp.add_handler(CommandHandler("start", bot.start))  # Commands
     bot.dp.add_handler(CommandHandler("help", bot.help_text))

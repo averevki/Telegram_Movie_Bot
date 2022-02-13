@@ -3,20 +3,21 @@ import os
 from telegram.ext import *
 from telegram import *
 import logging
-import logging.config
+from logging import config
 BOT_API = os.getenv("BOT_API", None)
 API_KEY = os.getenv("API_KEY", None)
-memory: dict = {}  # last title that user found, stored in memory
 
 
 class Bot:
     def __init__(self):
         """Initialize bot and his logger"""
+        self.updater = Updater(BOT_API, use_context=True)  # Set up bot updater and dispatcher
+        self.dp = self.updater.dispatcher
+
         logging.config.fileConfig("logging.conf")  # Use logger config
         self.logger = logging.getLogger(__name__)  # Create logger
 
-        self.updater = Updater(BOT_API, use_context=True)  # Set up bot updater and dispatcher
-        self.dp = self.updater.dispatcher
+        self.memory: dict = {}  # last title that user found, stored in memory
 
     def start(self, update, context):
         """Message that prints for new users"""
@@ -54,8 +55,7 @@ class Bot:
 
         response = requests.get("http://www.omdbapi.com", params=params)
         response.raise_for_status()
-        global memory
-        movie_data = memory = response.json()
+        movie_data = self.memory = response.json()                                  # Save found title in memory
         data_str = f"Title:    {movie_data['Title']} ({movie_data['Year']})\n" \
                    f"Genre:    {movie_data['Genre']}\n" \
                    f"Rating:    {movie_data['imdbRating']}/10\n" \
@@ -69,22 +69,21 @@ class Bot:
 
     def rated(self, update, context):
         """Print out rating of the movie in memory"""
-        if memory:
-            update.message.reply_text(f"{memory['Title']} rated: {memory['Rated']}")
+        if self.memory:
+            update.message.reply_text(f"{self.memory['Title']} rated: {self.memory['Rated']}")
         else:
             update.message.reply_text("My memory is empty😕")
 
     def language(self, update, context):
         """Print out rating of the movie in memory"""
-        if memory:
-            update.message.reply_text(f"{memory['Title']} languages: {memory['Language']}")
+        if self.memory:
+            update.message.reply_text(f"{self.memory['Title']} languages: {self.memory['Language']}")
         else:
             update.message.reply_text("My memory is empty😕")
 
     def awards(self, update, context):
         """Print out rating of the movie in memory"""
-        if memory:
-            update.message.reply_text(f"{memory['Title']} awards: {memory['Awards']}")
+        if self.memory:
+            update.message.reply_text(f"{self.memory['Title']} awards: {self.memory['Awards']}")
         else:
             update.message.reply_text("My memory is empty😕")
-
