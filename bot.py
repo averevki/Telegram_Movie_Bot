@@ -4,8 +4,12 @@ from telegram.ext import *
 from telegram import *
 import logging
 from logging import config
-BOT_API = os.getenv("BOT_API", None)
-API_KEY = os.getenv("API_KEY", None)
+
+from dotenv import load_dotenv      # load variables from local environment
+load_dotenv()
+BOT_API = os.getenv("BOT_API")
+OMDB_API = os.getenv("OMDB_API")
+IMDB_API = os.getenv("IMDB_API")
 
 
 class Bot:
@@ -42,14 +46,14 @@ class Bot:
         if "y=" in context.args[-1]:                    # check arguments for year specification
             movie_name = " ".join(context.args[:-1])
             params = {
-                "apikey": API_KEY,
+                "apikey": OMDB_API,
                 "t": movie_name,
                 "y": context.args[-1][2:]
             }
         else:
             movie_name = " ".join(context.args)
             params = {
-                "apikey": API_KEY,
+                "apikey": OMDB_API,
                 "t": movie_name,
             }
 
