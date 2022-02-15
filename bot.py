@@ -1,3 +1,5 @@
+"""Bot module"""
+
 import requests
 import os
 from telegram.ext import *
@@ -13,7 +15,7 @@ IMDB_API = os.getenv("IMDB_API")
 
 
 class Bot:
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize bot and his logger"""
         self.updater = Updater(BOT_API, use_context=True)  # Set up bot updater and dispatcher
         self.dp = self.updater.dispatcher
@@ -24,27 +26,27 @@ class Bot:
         self.memory: dict = {}  # last title that user found, stored in memory
 
     @staticmethod
-    def start(update: Update, context: CallbackContext):
+    def start(update: Update, context: CallbackContext) -> None:
         """Message that prints for new users"""
         update.message.reply_text("Hello, I'm MovieBot :) -> /help")
 
     @staticmethod
-    def help_text(update: Update, context: CallbackContext):
+    def help_text(update: Update, context: CallbackContext) -> None:
         """/help message"""
         update.message.reply_text("Help will be there")  # TODO
 
     @staticmethod
-    def any_text(update: Update, context: CallbackContext):
+    def any_text(update: Update, context: CallbackContext) -> None:
         """Bot response on not coded text"""
         update.message.reply_text(f"Unknown command: {update.message.text}")
 
-    def error(self, update: Update, context: CallbackContext):
+    def error(self, update: Update, context: CallbackContext) -> None:
         """Logs errors"""
         update.message.reply_text("Sorry, this movie/show is unknown to me")
         self.logger.exception(f"error: {context.error} - "
                               f"['{update['message']['chat']['first_name']}': '{update['message']['text']}']")
 
-    def find_title(self, update: Update, context: CallbackContext):
+    def find_title(self, update: Update, context: CallbackContext) -> None:
         """/find command, finds movie by specifications"""
         if "y=" in context.args[-1]:                    # check arguments for year specification
             movie_name = " ".join(context.args[:-1])
@@ -75,28 +77,28 @@ class Bot:
                    [InlineKeyboardButton("trailer", callback_data=f"{self.memory['Title']} trailer")]]
         update.message.reply_text(data_str, reply_markup=InlineKeyboardMarkup(buttons))
 
-    def rated(self, update: Update, context: CallbackContext):
+    def rated(self, update: Update, context: CallbackContext) -> None:
         """Print out rating of the movie in memory"""
         if self.memory:
             update.message.reply_text(f"{self.memory['Title']} rated:\n{self.memory['Rated']}")
         else:
             update.message.reply_text("My memory is empty😕.\nLook something up! -> /find")
 
-    def language(self, update: Update, context: CallbackContext):
+    def language(self, update: Update, context: CallbackContext) -> None:
         """Print out rating of the movie in memory"""
         if self.memory:
             update.message.reply_text(f"{self.memory['Title']} languages:\n{self.memory['Language']}")
         else:
             update.message.reply_text("My memory is empty😕.\nLook something up! -> /find")
 
-    def awards(self, update: Update, context: CallbackContext):
+    def awards(self, update: Update, context: CallbackContext) -> None:
         """Print out rating of the movie in memory"""
         if self.memory:
             update.message.reply_text(f"{self.memory['Title']} awards:\n{self.memory['Awards']}")
         else:
             update.message.reply_text("My memory is empty😕.\nLook something up! -> /find")
 
-    def query_handler(self, update: Update, context: CallbackContext):
+    def query_handler(self, update: Update, context: CallbackContext) -> None:
         query = update.callback_query.data
         update.callback_query.answer()
         self.logger.info(query)

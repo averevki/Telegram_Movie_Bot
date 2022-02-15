@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 
-# Aleksandr Verevkin
-# Telegram movie/show information bot
-# By using omdb & imdb APIs
+"""Telegram movie/show information bot
+By using omdb & imdb APIs
+"""
+
+__author__ = "Aleksandr Verevkin"
+__license__ = "GNU GPL v.3"
+__maintainer__ = "Aleksandr Verevkin"
+__status__ = "Production"
+
 from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackQueryHandler, filters
 from bot import Bot
 # TODO separate print method
