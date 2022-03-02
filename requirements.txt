@@ -1,0 +1,2 @@
+#TODO
+Shortcut command pip install -r requirements.txt command to quickly install all packages to the newly created virtual environment.
