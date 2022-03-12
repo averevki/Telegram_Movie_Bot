@@ -13,18 +13,26 @@ from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackQueryH
 from bot import Bot
 # TODO separate print method
 # TODO buttons memory
+# TODO IMDB link
+# TODO trailer
 
-if __name__ == "__main__":
-    bot = Bot()                              # Bot initialization
-    bot.logger.info("Bot is initialized")
+
+def main():
+    bot = Bot()  # Bot initialization
+    bot.logger.info("Bot is initialized and maintained")
 
     bot.dp.add_handler(CommandHandler("start", bot.start))  # Commands
     bot.dp.add_handler(CommandHandler("help", bot.help_text))
 
     bot.dp.add_handler(CommandHandler("find", bot.find_title))  # Movie commands
+    bot.dp.add_handler(CommandHandler("rate", bot.rated))
     bot.dp.add_handler(CommandHandler("rated", bot.rated))
     bot.dp.add_handler(CommandHandler("language", bot.language))
+    bot.dp.add_handler(CommandHandler("award", bot.awards))
     bot.dp.add_handler(CommandHandler("awards", bot.awards))
+    bot.dp.add_handler(CommandHandler("plot", bot.plot))
+    bot.dp.add_handler(CommandHandler("rating", bot.rating))
+    bot.dp.add_handler(CommandHandler("ratings", bot.rating))
 
     bot.dp.add_handler(MessageHandler(Filters.text, bot.any_text))  # Any other message
 
@@ -36,3 +44,7 @@ if __name__ == "__main__":
     bot.updater.idle()
 
     bot.logger.info("Bot terminated.")
+
+
+if __name__ == "__main__":
+    main()
