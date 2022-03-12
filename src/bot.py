@@ -41,7 +41,7 @@ class Bot:
     def any_text(self, update: Update, context: CallbackContext) -> None:
         """Bot response on not coded text"""
         self.logger.info(f"unknown command called ({update.message.text})")
-        update.message.reply_text(f"Unknown command: {update.message.text}")
+        update.message.reply_text(f"Unknown command: {update.message.text} -> /help")
 
     def error(self, update: Update, context: CallbackContext) -> None:
         """Logs errors"""
