@@ -1,12 +1,12 @@
 """Bot module"""
 
-import requests
 import os
 import logging
 from logging import config
 
-from telegram.ext import *
-from telegram import *
+import requests
+from telegram.ext import Updater, CallbackContext
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from dotenv import load_dotenv      # load variables from local environment
 load_dotenv()
 
@@ -82,7 +82,8 @@ class Bot:
                    f"Director:    {movie_data['Director']}\n"
 
         poster = requests.get(movie_data["Poster"]).content
-        context.bot.sendMediaGroup(chat_id=update.effective_chat.id, media=[InputMediaPhoto(poster)])  # Show poster
+        context.bot.sendMediaGroup(chat_id=update.effective_chat.id,
+                                   media=[InputMediaPhoto(poster)])  # Show poster
 
         buttons = [[InlineKeyboardButton("plot", callback_data=f"{self.memory['Title']} plot")],
                    [InlineKeyboardButton("trailer", callback_data=f"{self.memory['Title']} trailer")],

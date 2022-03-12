@@ -9,7 +9,8 @@ __license__ = "GNU GPL v.3"
 __maintainer__ = "Aleksandr Verevkin"
 __status__ = "Production"
 
-from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackQueryHandler, filters
+from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+
 from bot import Bot
 # TODO separate print method
 # TODO buttons memory
