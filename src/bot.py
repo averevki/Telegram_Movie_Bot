@@ -6,7 +6,7 @@ from logging import config
 
 import requests
 from telegram.ext import Updater, CallbackContext
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from dotenv import load_dotenv      # load variables from local environment
 load_dotenv()
 
@@ -21,12 +21,14 @@ IMDB_LINK = "https://www.imdb.com/title/"
 class Bot:
     """Bot operations
 
-    Available bot operations
+    Available bot commands and operations
+    API requests
     """
     HELP_MSG = "Available commands:\n" \
                "    /help\n" \
                "    /find [title] [y=year] (/find The Godfather y=1972)\n" \
-               "After you find a movie, use bot memory to get movie information:\n" \
+               "After you find a movie, use buttons under it to get more information or " \
+               "use commands to get information about last movie from bot memory:\n" \
                "    /rate|/rated -- movie PG\n" \
                "    /award|/awards -- awards and nominations\n" \
                "    /rating|/ratings -- movie ratings\n" \
@@ -98,19 +100,23 @@ class Bot:
                    f"Actors:    {movie_data['Actors']}\n" \
                    f"Director:    {movie_data['Director']}\n"
 
-
         poster = requests.get(movie_data["Poster"]).content
         context.bot.sendMediaGroup(chat_id=update.effective_chat.id,
                                    media=[InputMediaPhoto(poster)])  # Show poster
 
-        buttons = [[InlineKeyboardButton("Plot", callback_data=f"{self.memory['Title']} plot"),
+        buttons = [[InlineKeyboardButton("Plot", callback_data=f"{movie_data['Title']}:plot"),
                    InlineKeyboardButton("Trailer", url=self.get_trailer_url(movie_data["imdbID"])),
-                   InlineKeyboardButton("Ratings", callback_data=f"{self.memory['Title']} rating")],
+                   InlineKeyboardButton("Ratings", callback_data=f"{movie_data['Title']}:ratings")],
                    [InlineKeyboardButton("IMDB page", url=f"{IMDB_LINK}{movie_data['imdbID']}")]]
+        print(self.get_plot(movie_data))
+        print(self.fetch_rating(movie_data))
         update.message.reply_text(data_str, reply_markup=InlineKeyboardMarkup(buttons))
 
     @staticmethod
     def get_trailer_url(imdb_id: str) -> str:
+        """Return movie youtube trailer url as string
+        using IMDB API
+        """
         imdb_params = {
             "apiKey": IMDB_API,
             "id": imdb_id
@@ -119,61 +125,83 @@ class Bot:
 
     @property
     def get_link(self) -> str:
+        """Imdb movie link getter"""
         return f"{self.memory['Title']} on IMDB:\n{IMDB_LINK}{self.memory['imdbID']}"
 
     def link(self, update: Update, context: CallbackContext) -> None:
-        """Print out IMDB link of the movie in memory"""
+        """/link command
+
+        Print out IMDB link of the movie in memory
+        """
         self.logger.info("/link called")
         if self.memory:
             update.message.reply_text(self.get_link)
         else:
             self.empty_memory(update)
 
-    @property
-    def fetch_rating(self) -> str:
+    @staticmethod
+    def fetch_rating(movie_json: dict) -> str:
+        """Assemble movie ratings from different websites and
+        return it as string
+        """
         rating_str: str = ""
-        for rating in self.memory["Ratings"]:
+        for rating in movie_json["Ratings"]:
             rating_str += f"{rating['Source']}: {rating['Value']}\n"
-        return f"{self.memory['Title']} ratings:\n{rating_str}"
+        return f"{movie_json['Title']} ratings:\n{rating_str}"
 
     def rating(self, update: Update, context: CallbackContext) -> None:
-        """Print out rating of the movie in memory"""
+        """/rating command
+
+        Print out rating of the movie in memory
+        """
         self.logger.info("/rating called")
         if self.memory:
-            update.message.reply_text(self.fetch_rating)
+            update.message.reply_text(self.fetch_rating(self.memory))
         else:
             self.empty_memory(update)
 
     @property
     def get_rated(self) -> str:
+        """Movie rate getter"""
         return f"{self.memory['Title']} rated:\n{self.memory['Rated']}"
 
     def rated(self, update: Update, context: CallbackContext) -> None:
-        """Print out rating of the movie in memory"""
+        """/rated command
+
+        Print out rating of the movie in memory
+        """
         self.logger.info("/rated called")
         if self.memory:
             update.message.reply_text(self.get_rated)
         else:
             self.empty_memory(update)
 
-    @property
-    def get_plot(self) -> str:
-        return f"{self.memory['Title']} plot:\n{self.memory['Plot']}"
+    @staticmethod
+    def get_plot(movie_json: dict) -> str:
+        """Movie plot getter"""
+        return f"{movie_json['Title']} plot:\n{movie_json['Plot']}"
 
     def plot(self, update: Update, context: CallbackContext) -> None:
-        """Print out plot of the movie in memory"""
+        """/plot command
+
+        Print out plot of the movie in memory
+        """
         self.logger.info("/plot called")
         if self.memory:
-            update.message.reply_text(self.get_plot)
+            update.message.reply_text(self.get_plot(self.memory))
         else:
             self.empty_memory(update)
 
     @property
     def get_languages(self) -> str:
+        """Movie languages getter"""
         return f"{self.memory['Title']} languages:\n{self.memory['Language']}"
 
     def language(self, update: Update, context: CallbackContext) -> None:
-        """Print out available languages of the movie in memory"""
+        """/language command
+
+        Print out available languages of the movie in memory
+        """
         self.logger.info("/language called")
         if self.memory:
             update.message.reply_text(self.get_languages)
@@ -182,10 +210,14 @@ class Bot:
 
     @property
     def get_awards(self) -> str:
+        """Awards getter"""
         return f"{self.memory['Title']} awards:\n{self.memory['Awards']}"
 
     def awards(self, update: Update, context: CallbackContext) -> None:
-        """Print out awards of the movie in memory"""
+        """/awards command
+
+        Print out awards of the movie in memory
+        """
         self.logger.info("/awards called")
         if self.memory:
             update.message.reply_text(self.get_awards)
@@ -193,13 +225,18 @@ class Bot:
             self.empty_memory(update)
 
     def query_handler(self, update: Update, context: CallbackContext) -> None:
+        """Buttons handler"""
         query = update.callback_query.data
         update.callback_query.answer()
         self.logger.info(query)
-        if f"{self.memory['Title']} trailer" in query:  # TODO
-            pass
-            # update.callback_query.message.reply_text(f"{self.memory['Title']} shit:\n{self.memory['Awards']}")
-        elif f"{self.memory['Title']} rating" in query:
-            update.callback_query.message.reply_text(self.fetch_rating)
-        elif f"{self.memory['Title']} plot" in query:
-            update.callback_query.message.reply_text(f"{self.memory['Title']} plot:\n{self.memory['Plot']}")
+
+        title, kword = query.split(":")
+        omdb_params = {
+            "apikey": OMDB_API,
+            "t": title,
+        }
+        data = requests.get(OMDB, params=omdb_params).json()
+        if kword == "ratings":
+            update.callback_query.message.reply_text(self.fetch_rating(data))
+        elif kword == "plot":
+            update.callback_query.message.reply_text(self.get_plot(data))

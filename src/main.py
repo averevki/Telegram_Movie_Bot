@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 
 """Telegram movie/show information bot
+
 By using omdb & imdb APIs
+
+Bot collecting available commands from users and
+find information about movies on their foundation.
+You can start with /help command.
 """
 
 __author__ = "Aleksandr Verevkin"
 __license__ = "GNU GPL v.3"
 __maintainer__ = "Aleksandr Verevkin"
-__status__ = "Production"
+__status__ = "Maintenance"
 
 from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 
 from bot import Bot
-# TODO buttons memory
-# TODO trailer online
-# TODO try unpopular movies
 
 
 def main():
