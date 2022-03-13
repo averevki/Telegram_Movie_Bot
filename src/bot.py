@@ -10,11 +10,11 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMe
 from dotenv import load_dotenv      # load variables from local environment
 load_dotenv()
 
-BOT_API = getenv("BOT_API")
+BOT_API = getenv("BOT_API") # Your bot api
 OMDB = "http://www.omdbapi.com"
-OMDB_API = getenv("OMDB_API")
+OMDB_API = getenv("OMDB_API")   # Your omdb api
 IMDB_TRAILER_REQ = "https://imdb-api.com/en/API/YouTubeTrailer"
-IMDB_API = getenv("IMDB_API")
+IMDB_API = getenv("IMDB_API")   # Your imdb api
 IMDB_LINK = "https://www.imdb.com/title/"
 
 
@@ -108,8 +108,6 @@ class Bot:
                    InlineKeyboardButton("Trailer", url=self.get_trailer_url(movie_data["imdbID"])),
                    InlineKeyboardButton("Ratings", callback_data=f"{movie_data['Title']}:ratings")],
                    [InlineKeyboardButton("IMDB page", url=f"{IMDB_LINK}{movie_data['imdbID']}")]]
-        print(self.get_plot(movie_data))
-        print(self.fetch_rating(movie_data))
         update.message.reply_text(data_str, reply_markup=InlineKeyboardMarkup(buttons))
 
     @staticmethod
